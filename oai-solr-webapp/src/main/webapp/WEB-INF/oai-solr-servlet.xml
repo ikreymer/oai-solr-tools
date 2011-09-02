@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+  <!-- Use this bean to handle Xslt on the client side. This is the recommended use -->
+  <bean name="xsltHandler" class="org.archive.archiveit.oaisolr.XsltHandler">
+  </bean>
+
+  <!-- Specify messages file for error messages that can be localized -->
+  <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+    <property name="basename" value="errors"/>
+  </bean>
+
+  <!-- Main OAI Controller -->
+  <bean name="controller" class="org.archive.archiveit.oaisolr.OAIController">
+
+    <!-- Path to Solr -->
+    <constructor-arg value="http://localhost:8983/solr" />
+    
+    <!-- Optional: Enable Client XSLT handling -->
+    <constructor-arg ref="xsltHandler" />
+
+    <!-- The identifier in the record header and dc:identifier fields will start with this prefix -->
+    <property name="identifierPrefix" value="http://example.com/oai/collections/" />
+
+    <!-- Path to main oai.xsl file -->
+    <property name="xsltPath" value="oai-pmh/oai.xsl" />
+
+    <!-- Number of results to return for ListRecords, ListIdentifiers and ListSets -->
+    <!-- The resumptionToken mechanism is used to page through the results -->
+    <!-- Set to -1 to return all results and never used resumption tokens -->
+    <property name="numResultsToDisplay" value="100" />
+
+    <!-- Solr field that represents a unique id for each record -->
+    <property name="collectionIdField" value="collectionId" />
+
+    <!-- Solr field that represents the last modified datestamp for each record -->
+    <property name="datestampField" value="datestamp" />
+
+    <!-- Solr filter queries that are applied to get the valid list of collections -->
+    <property name="filterQueries">
+      <array>
+        <value>solrType:Collection</value>
+      </array>
+    </property>
+
+    <!-- Sets (note: this config is more likely to change) -->
+    
+    <!-- Set prefix that is added before unique id to each set -->
+    <!-- Each set will be identified with [setPrefix]:[setIdField] -->
+    <!-- where the setPrefix is constant and setIdField is unique for each set -->
+    <!-- Must be a valid set identifier (e.g. no whitespace, invalid url characters) -->
+    <property name="setPrefix" value="organization" />
+    
+    <!-- Solr field that uniquely identifies the set. -->
+    <!-- Must be a valid set identifier (e.g. no whitespace, invalid url characters) -->
+    <property name="setIdField" value="institutionId" />
+    
+    <!-- Solr field that contains the name of the set. Does not need to be unique -->
+    <property name="setNameField" value="institutionName" />
+    
+    <!-- Optional: Solr field that contains the description for each set -->
+    <property name="setDescField" value="institutionDesc" />
+
+    <!-- Solr filter queries that are applied to get the set list -->
+    <property name="setQueries">
+      <array>
+        <value>type:Institution</value>
+      </array>
+    </property>
+
+  </bean>
+
+</beans>
